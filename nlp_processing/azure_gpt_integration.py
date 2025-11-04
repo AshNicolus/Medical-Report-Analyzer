@@ -5,8 +5,8 @@ import requests
 import json
 
 # Hardcoded API key (for demo only; do NOT use in production)
-AZURE_OPENAI_API_KEY = "AIkg5CJq34sgoJaRg6DnO4dViK3e2t8cIPnfQTtxUtWDFcJkYDDqJQQJ99BGACHYHv6XJ3w3AAAAACOGLjBK"
-AZURE_ENDPOINT = "https://tradeguard3.cognitiveservices.azure.com"
+AZURE_OPENAI_API_KEY = "xxxxxxxxxxx"
+AZURE_ENDPOINT = "xxxxxxxxxxxx"
 DEPLOYMENT_NAME = "gpt-4o"
 API_VERSION = "2024-08-01-preview"
 
