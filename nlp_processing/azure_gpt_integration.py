@@ -4,9 +4,9 @@ Azure OpenAI GPT integration for clinical entity extraction and recommendation
 import requests
 import json
 
-# Hardcoded API key (for demo only; do NOT use in production)
-AZURE_OPENAI_API_KEY = "xxxxxxxxxxx"
-AZURE_ENDPOINT = "xxxxxxxxxxxx"
+
+# AZURE_OPENAI_API_KEY = "xxxxxxxxxxx"
+# AZURE_ENDPOINT = "xxxxxxxxxxxx"
 DEPLOYMENT_NAME = "gpt-4o"
 API_VERSION = "2024-08-01-preview"
 
@@ -40,5 +40,4 @@ if __name__ == "__main__":
     gpt_response = call_azure_gpt(prompt)
     print("Azure GPT Response:", gpt_response)
 
-# SECURITY NOTE:
-# Hardcoding API keys is NOT recommended for production. Use secure vaults, environment variables, or managed identity for secrets.
+
