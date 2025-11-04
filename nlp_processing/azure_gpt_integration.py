@@ -5,8 +5,8 @@ import requests
 import json
 
 
-# AZURE_OPENAI_API_KEY = "xxxxxxxxxxx"
-# AZURE_ENDPOINT = "xxxxxxxxxxxx"
+AZURE_OPENAI_API_KEY = "AIkg5CJq34sgoJaRg6DnO4dViK3e2t8cIPnfQTtxUtWDFcJkYDDqJQQJ99BGACHYHv6XJ3w3AAAAACOGLjBK"
+AZURE_ENDPOINT = "https://tradeguard3.cognitiveservices.azure.com"
 DEPLOYMENT_NAME = "gpt-4o"
 API_VERSION = "2024-08-01-preview"
 
@@ -39,5 +39,3 @@ if __name__ == "__main__":
     prompt = f"Extract clinical entities and recommend diagnostic tests for this report: {sample_text}"
     gpt_response = call_azure_gpt(prompt)
     print("Azure GPT Response:", gpt_response)
-
-
