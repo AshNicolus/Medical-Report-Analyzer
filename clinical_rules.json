@@ -1,0 +1,12 @@
+{
+    "MRI": {"symptoms": ["pain", "swelling"], "contraindications": ["pacemaker"], "urgency": "high"},
+    "CT scan": {"symptoms": ["headache", "stroke"], "contraindications": ["pregnancy"], "urgency": "medium"},
+    "X-ray": {"symptoms": ["fracture", "swelling"], "contraindications": [], "urgency": "low"},
+    "ECG": {"symptoms": ["chest pain", "palpitations"], "contraindications": [], "urgency": "high"},
+    "blood tests": {"symptoms": ["fatigue", "anemia"], "contraindications": [], "urgency": "medium"},
+    "ultrasound": {"symptoms": ["swelling", "pain"], "contraindications": [], "urgency": "medium"},
+    "EMG/NCS": {"symptoms": ["weakness", "numbness"], "contraindications": [], "urgency": "medium"},
+    "physical therapy": {"symptoms": ["functional impairment"], "contraindications": ["acute fracture"], "urgency": "low"},
+    "bone density test": {"symptoms": ["osteoporosis", "fracture"], "contraindications": [], "urgency": "low"},
+    "endoscopy": {"symptoms": ["abdominal pain", "bleeding"], "contraindications": ["severe coagulopathy"], "urgency": "high"}
+}

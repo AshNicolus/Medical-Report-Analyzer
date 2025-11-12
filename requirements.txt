@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pdfplumber
+PyMuPDF
+pytesseract
+Pillow
+transformers
+torch
+spacy
+scikit-learn
+pandas
+numpy
+python-dotenv
