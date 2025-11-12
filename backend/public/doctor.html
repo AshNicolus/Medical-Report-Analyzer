@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Portal - Medical Report Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .filter-bar select, .filter-bar button {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .filter-bar button {
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s;
+        }
+
+        .filter-bar button:hover {
+            background: #5568d3;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .report-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .report-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .report-card.low-confidence {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .report-card.medium-confidence {
+            border-left: 4px solid #feca57;
+        }
+
+        .report-card.high-confidence {
+            border-left: 4px solid #48c774;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .report-id {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .confidence-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .confidence-low { background: #ffe0e0; color: #c92a2a; }
+        .confidence-medium { background: #fff4e0; color: #e67700; }
+        .confidence-high { background: #e0ffe0; color: #2b8a3e; }
+
+        .report-info p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .report-info strong {
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-reviewed { background: #d4edda; color: #155724; }
+        .status-edited { background: #d1ecf1; color: #0c5460; }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close {
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            opacity: 0.8;
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 5px;
+        }
+
+        .detail-item label {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .detail-item .value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .edit-form, .review-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #48c774;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #3ead66;
+        }
+
+        .edit-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .edit-allowed {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍⚕️ Doctor Portal</h1>
+        <p class="subtitle">Review and manage medical report analyses</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('all-reports')">All Reports</button>
+            <button class="tab" onclick="switchTab('pending')">Pending Review</button>
+            <button class="tab" onclick="switchTab('low-confidence')">Low Confidence</button>
+        </div>
+
+        <div id="all-reports" class="tab-content active">
+            <div class="filter-bar">
+                <select id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="edited">Edited</option>
+                </select>
+                <button onclick="loadReports()">Refresh</button>
+            </div>
+            <div id="reportsContainer" class="loading">Loading reports...</div>
+        </div>
+
+        <div id="pending" class="tab-content">
+            <div id="pendingReportsContainer" class="loading">Loading pending reports...</div>
+        </div>
+
+        <div id="low-confidence" class="tab-content">
+            <div id="lowConfidenceContainer" class="loading">Loading low confidence reports...</div>
+        </div>
+    </div>
+
+    <!-- Report Detail Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Report Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be dynamically loaded -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/doctor';
+        let currentReport = null;
+
+        // Load reports on page load
+        window.onload = function() {
+            loadReports();
+        };
+
+        function switchTab(tabName) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            // Load appropriate data
+            if (tabName === 'pending') {
+                loadReports('pending', 'pendingReportsContainer');
+            } else if (tabName === 'low-confidence') {
+                loadLowConfidenceReports();
+            } else {
+                loadReports('', 'reportsContainer');
+            }
+        }
+
+        async function loadReports(status = '', containerId = 'reportsContainer') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '<div class="loading">Loading reports...</div>';
+
+            const filterStatus = status || document.getElementById('statusFilter')?.value || '';
+            const url = filterStatus ? `${API_BASE}/reports?status=${filterStatus}` : `${API_BASE}/reports`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success && data.reports && data.reports.length > 0) {
+                    displayReports(data.reports, container);
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <p style="font-size: 18px;">No reports found</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error-message">Error loading reports: ${error.message}</div>`;
+            }
+        }
+
+        async function loadLowConfidenceReports() {
+            const container = document.getElementById('lowConfidenceContainer');
+            container.innerHTML = '<div class="loading">Loading low confidence reports...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/reports`);
+                const data = await response.json();
+
+                if (data.success && data.reports) {
+                    const lowConfReports = data.reports.filter(r => r.ai_analysis?.confidence_score < 90);
+                    if (lowConfReports.length > 0) {
+                        displayReports(lowConfReports, container);
+                    } else {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <p style="font-size: 18px;">No low confidence reports</p>
+                                <p>All reports have confidence ≥ 90%</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="error-message">Error loading reports: ${error.message}</div>`;
+            }
+        }
+
+        function displayReports(reports, container) {
+            const html = reports.map(report => {
+                const confidence = report.ai_analysis?.confidence_score || 0;
+                const confidenceClass = confidence < 70 ? 'low-confidence' : 
+                                      confidence < 90 ? 'medium-confidence' : 'high-confidence';
+                const confidenceBadgeClass = confidence < 70 ? 'confidence-low' : 
+                                            confidence < 90 ? 'confidence-medium' : 'confidence-high';
+                const status = report.status || 'pending';
+                const statusClass = `status-${status}`;
+
+                return `
+                    <div class="report-card ${confidenceClass}" onclick="viewReportDetail('${report._id}')">
+                        <div class="report-header">
+                            <div>
+                                <div class="report-id">ID: ${report._id}</div>
+                                <span class="status-badge ${statusClass}">${status}</span>
+                            </div>
+                            <span class="confidence-badge ${confidenceBadgeClass}">${confidence.toFixed(1)}%</span>
+                        </div>
+                        <div class="report-info">
+                            <p><strong>Patient ID:</strong> ${report.patient_id || 'N/A'}</p>
+                            <p><strong>Uploaded:</strong> ${new Date(report.created_at).toLocaleString()}</p>
+                            <p><strong>Entities Found:</strong> ${Object.keys(report.ai_analysis?.entities || {}).length}</p>
+                            <p><strong>Recommendations:</strong> ${report.ai_analysis?.recommendations?.length || 0}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div class="reports-grid">${html}</div>`;
+        }
+
+        async function viewReportDetail(reportId) {
+            try {
+                const response = await fetch(`${API_BASE}/reports/${reportId}`);
+                const report = await response.json();
+                currentReport = report;
+
+                const confidence = report.ai_analysis?.confidence_score || 0;
+                const canEdit = confidence < 90;
+
+                const modalBody = document.getElementById('modalBody');
+                modalBody.innerHTML = `
+                    <div class="detail-section">
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <label>Report ID</label>
+                                <div class="value">${report._id}</div>
+                            </div>
+                            <div class="detail-item">
+                                <label>Patient ID</label>
+                                <div class="value">${report.patient_id}</div>
+                            </div>
+                            <div class="detail-item">
+                                <label>Status</label>
+                                <div class="value"><span class="status-badge status-${report.status || 'pending'}">${report.status || 'pending'}</span></div>
+                            </div>
+                            <div class="detail-item">
+                                <label>Confidence Score</label>
+                                <div class="value">${confidence.toFixed(2)}%</div>
+                            </div>
+                            <div class="detail-item">
+                                <label>Created</label>
+                                <div class="value">${new Date(report.created_at).toLocaleString()}</div>
+                            </div>
+                            <div class="detail-item">
+                                <label>PDF Path</label>
+                                <div class="value">${report.pdf_path || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Extracted Entities</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Values</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Object.entries(report.ai_analysis?.entities || {}).map(([key, values]) => `
+                                    <tr>
+                                        <td><strong>${key}</strong></td>
+                                        <td>${Array.isArray(values) ? values.join(', ') : values}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Recommendations</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Recommendation</th>
+                                    <th>Confidence</th>
+                                    <th>Urgency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(report.ai_analysis?.recommendations || []).map(rec => `
+                                    <tr>
+                                        <td>${rec.recommendation}</td>
+                                        <td>${rec.confidence || 'N/A'}</td>
+                                        <td>${rec.urgency || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ${report.doctor_review ? `
+                        <div class="detail-section">
+                            <h3>Doctor Review</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Reviewed By</label>
+                                    <div class="value">${report.doctor_review.reviewed_by}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Reviewed At</label>
+                                    <div class="value">${new Date(report.doctor_review.reviewed_at).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            ${report.doctor_review.notes ? `<p style="margin-top: 10px;"><strong>Notes:</strong> ${report.doctor_review.notes}</p>` : ''}
+                            ${report.doctor_review.edited_fields ? `<p style="margin-top: 10px;"><strong>Edited Fields:</strong> ${JSON.stringify(report.doctor_review.edited_fields)}</p>` : ''}
+                        </div>
+                    ` : ''}
+
+                    ${canEdit ? `
+                        <div class="edit-allowed">
+                            ⚠️ <strong>Low Confidence Alert:</strong> This report has a confidence score below 90%. You can edit the AI analysis.
+                        </div>
+                        <div class="edit-form">
+                            <h3>Edit AI Analysis</h3>
+                            <form id="editForm">
+                                <div class="form-group">
+                                    <label>Corrected Entities (JSON format)</label>
+                                    <textarea id="editedEntities" placeholder='{"symptoms": ["fever", "cough"]}'>${JSON.stringify(report.ai_analysis?.entities || {}, null, 2)}</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor Notes</label>
+                                    <textarea id="editNotes" placeholder="Explain the corrections made..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor ID</label>
+                                    <input type="text" id="doctorId" placeholder="Enter your doctor ID" required>
+                                </div>
+                                <div class="button-group">
+                                    <button type="button" class="btn btn-success" onclick="submitEdit()">Save Edits</button>
+                                </div>
+                            </form>
+                        </div>
+                    ` : `
+                        <div class="edit-warning">
+                            ℹ️ This report has high confidence (≥90%) and cannot be edited. You can only submit a review.
+                        </div>
+                    `}
+
+                    <div class="review-form">
+                        <h3>Submit Review</h3>
+                        <form id="reviewForm">
+                            <div class="form-group">
+                                <label>Review Notes</label>
+                                <textarea id="reviewNotes" placeholder="Add your review notes..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Doctor ID</label>
+                                <input type="text" id="reviewDoctorId" placeholder="Enter your doctor ID" required>
+                            </div>
+                            <div class="button-group">
+                                <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                                <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                document.getElementById('reportModal').style.display = 'block';
+            } catch (error) {
+                alert('Error loading report details: ' + error.message);
+            }
+        }
+
+        async function submitEdit() {
+            const doctorId = document.getElementById('doctorId').value;
+            const editedEntitiesText = document.getElementById('editedEntities').value;
+            const notes = document.getElementById('editNotes').value;
+
+            if (!doctorId) {
+                alert('Please enter your Doctor ID');
+                return;
+            }
+
+            try {
+                const editedFields = JSON.parse(editedEntitiesText);
+                
+                const response = await fetch(`${API_BASE}/reports/${currentReport._id}/edit`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        edited_fields: editedFields,
+                        notes: notes
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('✅ Edit submitted successfully!');
+                    closeModal();
+                    loadReports();
+                } else {
+                    alert('Error: ' + (result.error || 'Failed to submit edit'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function submitReview() {
+            const doctorId = document.getElementById('reviewDoctorId').value;
+            const notes = document.getElementById('reviewNotes').value;
+
+            if (!doctorId) {
+                alert('Please enter your Doctor ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/reports/${currentReport._id}/review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        notes: notes
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('✅ Review submitted successfully!');
+                    closeModal();
+                    loadReports();
+                } else {
+                    alert('Error: ' + (result.error || 'Failed to submit review'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').style.display = 'none';
+            currentReport = null;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

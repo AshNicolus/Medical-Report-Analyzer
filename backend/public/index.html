@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Analyzer - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature {
+            padding: 30px 20px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            transition: transform 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9ff;
+        }
+
+        .info-section {
+            margin-top: 50px;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .info-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .tech-badge {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Medical Report Analyzer</h1>
+        <p class="subtitle">
+            AI-powered medical report analysis with professional doctor review and intelligent chatbot assistance.
+        </p>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">📄</div>
+                <h3>PDF Analysis</h3>
+                <p>Upload medical reports and get instant AI-powered analysis</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Extraction</h3>
+                <p>Automatic entity extraction and clinical recommendations</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">👨‍⚕️</div>
+                <h3>Doctor Review</h3>
+                <p>Professional medical review and validation</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💬</div>
+                <h3>AI Chatbot</h3>
+                <p>Ask questions about your medical reports</p>
+            </div>
+        </div>
+
+        <div class="cta-buttons">
+            <a href="/login.html" class="btn btn-primary">Get Started</a>
+            <a href="/login.html" class="btn btn-secondary">Login</a>
+        </div>
+
+        <div class="info-section">
+            <h2>How It Works</h2>
+            <p>
+                <strong>For Patients:</strong> Upload your medical reports and receive AI-powered analysis with extracted entities, 
+                symptoms, diagnoses, and recommendations. Chat with our intelligent bot to understand your reports better.
+            </p>
+            <p>
+                <strong>For Doctors:</strong> Review patient reports, validate AI analysis, and provide professional feedback. 
+                Edit low-confidence analyses and contribute to improving the AI system.
+            </p>
+
+            <div class="tech-stack">
+                <span class="tech-badge">Go + Gin</span>
+                <span class="tech-badge">Python + FastAPI</span>
+                <span class="tech-badge">MongoDB</span>
+                <span class="tech-badge">Azure OpenAI</span>
+                <span class="tech-badge">spaCy NLP</span>
+                <span class="tech-badge">PyMuPDF</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is already logged in
+        const user = localStorage.getItem('user');
+        if (user) {
+            const userData = JSON.parse(user);
+            if (userData.type === 'patient') {
+                window.location.href = '/patient.html';
+            } else if (userData.type === 'doctor') {
+                window.location.href = '/doctor.html';
+            }
+        }
+    </script>
+</body>
+</html>

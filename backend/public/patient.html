@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Patient - Upload Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; background: #f4f6fb }
+    .card { background: #fff; padding: 20px; border-radius: 8px; max-width: 900px; margin: 24px auto; box-shadow: 0 6px 20px rgba(0,0,0,0.08) }
+    h1 { margin-bottom: 12px }
+    .row { display:flex; gap:12px; align-items:center }
+    input, button, select { padding:10px; border-radius:6px; border:1px solid #ddd }
+    table { width:100%; border-collapse:collapse; margin-top:16px }
+    th, td { border:1px solid #eee; padding:8px; text-align:left }
+    .notice { color:#777; font-size:0.9rem }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Upload Medical Report (PDF)</h1>
+    <p class="notice">Upload a PDF and the system will analyze it and return a structured summary (entities and recommendations).</p>
+
+    <div>
+      <label for="patientId">(Optional) Patient ID:</label>
+      <input id="patientId" placeholder="Patient ObjectID (optional)" style="width:100%" />
+    </div>
+
+    <div style="margin-top:12px">
+      <input type="file" id="fileInput" accept="application/pdf" />
+      <button id="uploadBtn">Upload & Analyze</button>
+    </div>
+
+    <div id="result" style="margin-top:20px"></div>
+  </div>
+
+  <script>
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const resultDiv = document.getElementById('result');
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      const patientId = document.getElementById('patientId').value.trim();
+      if (!file) return alert('Please select a PDF file');
+
+      const form = new FormData();
+      form.append('file', file);
+      if (patientId) form.append('patient_id', patientId);
+
+      resultDiv.innerHTML = '<em>Uploading and analyzing... please wait</em>';
+
+      try {
+        const res = await fetch('/api/patient/upload', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!res.ok) {
+          resultDiv.innerHTML = '<div style="color:tomato">Error: ' + (data.error || JSON.stringify(data)) + '</div>';
+          return;
+        }
+
+        // build tables
+        const analysis = data.analysis;
+        let html = `<h2>Analysis Result</h2>`;
+
+        // Entities
+        html += `<h3>Entities</h3>`;
+        if (analysis.entities && Object.keys(analysis.entities).length > 0) {
+          html += `<table><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody>`;
+          for (const [k,v] of Object.entries(analysis.entities)) {
+            html += `<tr><td>${k}</td><td>${Array.isArray(v) ? v.join(', ') : v}</td></tr>`;
+          }
+          html += `</tbody></table>`;
+        } else {
+          html += `<p>No entities extracted.</p>`;
+        }
+
+        // Recommendations
+        html += `<h3>Recommendations</h3>`;
+        if (analysis.recommendations && analysis.recommendations.length>0) {
+          html += `<table><thead><tr><th>Test</th><th>Reason</th><th>Contraindications</th><th>Confidence</th><th>Urgency</th></tr></thead><tbody>`;
+          analysis.recommendations.forEach(r => {
+            html += `<tr><td>${r.test}</td><td>${r.reason}</td><td>${(r.contraindications||[]).join(', ')}</td><td>${(r.confidence*100).toFixed(0)}%</td><td>${r.urgency}</td></tr>`;
+          });
+          html += `</tbody></table>`;
+        } else {
+          html += `<p>No recommendations found.</p>`;
+        }
+
+        // Warnings & score
+        if (analysis.warnings && analysis.warnings.length>0) {
+          html += `<h3>Warnings</h3><ul>` + analysis.warnings.map(w=>`<li>${w}</li>`).join('') + `</ul>`;
+        }
+
+        html += `<p><strong>Report ID:</strong> ${data.report_id}</p>`;
+
+        resultDiv.innerHTML = html;
+
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = '<div style="color:tomato">Upload failed: '+err.message+'</div>';
+      }
+    });
+  </script>
+</body>
+</html>

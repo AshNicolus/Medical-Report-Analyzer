@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            height: 80vh;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f7f9fc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-bubble {
+            background: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            margin-left: 10px;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .report-selector {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .report-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .report-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            padding: 10px;
+            text-align: center;
+            background: #ffeaa7;
+            margin: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            🏥 Medical Report Assistant
+        </div>
+
+        <div class="report-selector">
+            <label for="reportId">Select Your Report:</label>
+            <select id="reportId">
+                <option value="">-- Choose a report --</option>
+                <!-- Reports will be dynamically loaded -->
+            </select>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="message-bubble">
+                    👋 Hello! I'm your medical report assistant. Please select a report above, and I'll help you understand it better.
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            AI is typing...
+        </div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="messageInput" 
+                placeholder="Ask about your medical report..."
+                disabled
+            />
+            <button class="send-button" id="sendButton" disabled>Send</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let currentReportId = null;
+        let sessionId = null;
+
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const reportSelect = document.getElementById('reportId');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Load user's reports (mock data for now - replace with actual API call)
+        function loadReports() {
+            // TODO: Replace with actual API call to get user's reports
+            const mockReports = [
+                { id: '507f1f77bcf86cd799439011', name: 'Blood Test - Jan 2025' },
+                { id: '507f1f77bcf86cd799439012', name: 'MRI Scan - Dec 2024' }
+            ];
+
+            mockReports.forEach(report => {
+                const option = document.createElement('option');
+                option.value = report.id;
+                option.textContent = report.name;
+                reportSelect.appendChild(option);
+            });
+        }
+
+        // Handle report selection
+        reportSelect.addEventListener('change', async (e) => {
+            currentReportId = e.target.value;
+            
+            if (currentReportId) {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                
+                // Load chat history
+                try {
+                    const response = await fetch(`${API_BASE_URL}/chatbot/history/${currentReportId}`, {
+                        headers: {
+                            'Authorization': `Bearer YOUR_JWT_TOKEN` // TODO: Replace with actual token
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        sessionId = data.session_id;
+                        
+                        // Clear current messages except welcome
+                        chatMessages.innerHTML = '';
+                        
+                        // Display history
+                        if (data.messages && data.messages.length > 0) {
+                            data.messages.forEach(msg => {
+                                addMessage(msg.content, msg.role);
+                            });
+                        } else {
+                            addMessage('I can see your report now! Feel free to ask me anything about it.', 'assistant');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading chat history:', error);
+                }
+            } else {
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+            }
+        });
+
+        // Send message
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            
+            if (!message || !currentReportId) return;
+
+            // Display user message
+            addMessage(message, 'user');
+            messageInput.value = '';
+
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chatbot/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer YOUR_JWT_TOKEN` // TODO: Replace with actual token
+                    },
+                    body: JSON.stringify({
+                        report_id: currentReportId,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    sessionId = data.session_id;
+                    addMessage(data.message, 'assistant');
+                } else {
+                    addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                addMessage('Sorry, I could not connect to the server.', 'assistant');
+            } finally {
+                typingIndicator.style.display = 'none';
+            }
+        }
+
+        // Add message to chat
+        function addMessage(text, role) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize
+        loadReports();
+    </script>
+</body>
+</html>
